@@ -25,7 +25,6 @@ const options = {
 const createclent = Apipromise(async (req, res) => {
     const { email, username, password } = req.body
     const avater = req.file
-    
 
     if ([email, username, password].some(e => e.trim() === "")) {
         throw new Erres(400, "all filds are required")
@@ -53,7 +52,7 @@ const createclent = Apipromise(async (req, res) => {
     }
 
     res.status(200)
-        .json(new Response(200, { cresteduer }, `${username} your new acc created`))
+        .json(new Response(200, { ...cresteduer._doc }, `${username} your new acc created`))
 })
 
 const loginuser = Apipromise(async (req, res) => {
@@ -80,9 +79,9 @@ const loginuser = Apipromise(async (req, res) => {
     const currentuser = await Client.findById(userexgist._id).select("-password -apikey -refreshtokan")
 
     res.status(200)
-        .cookie("AccessToken", accesstoken, options)
-        .cookie("RefreshToken", refreshtoken, options)
-        .json(new Response(200, {currentuser, accesstoken, refreshtoken}, "user logined"))
+        .cookie("accesstoken", accesstoken, options)
+        .cookie("refreshtoken", refreshtoken, options)
+        .json(new Response(200, {...currentuser?._doc, accesstoken, refreshtoken}, "user logined"))
 
 })
 
@@ -98,8 +97,8 @@ const logoutuser = Apipromise(async (req, res) => {
     }
 
     res.status(200)
-        .clearCookie("AccessToken", options)
-        .clearCookie("RefreshToken", options)
+        .clearCookie("accesstoken", options)
+        .clearCookie("refreshtoken", options)
         .json(new Response(200, {}, "user log outed"))
 })
 

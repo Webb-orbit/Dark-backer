@@ -11,7 +11,8 @@ const clientshema = new Schema({
     },
     username: {
         type: String,
-        required: true
+        required: true,
+        maxLength: [50, 'username cannot exceed 50 characters']
     },
     password: {
         type: String,

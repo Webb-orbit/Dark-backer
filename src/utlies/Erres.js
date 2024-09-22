@@ -3,7 +3,7 @@ class Erres extends Error{
         super(message)
         this.ststuscode = ststuscode,
         this.message = message,
-        this.errs = errs
+        this.errs = errs    
     }
 }
 

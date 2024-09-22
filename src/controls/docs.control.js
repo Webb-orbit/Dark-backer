@@ -14,7 +14,7 @@ const createdoc = Apipromise(async (req, res) => {
 
     const newdoc = await Docs.create({
         title,
-        content,
+        content: content || "hello backer",
         shared,
         creator: req.client._id
     })
@@ -28,17 +28,17 @@ const createdoc = Apipromise(async (req, res) => {
             shareddoc: newdoc._id,
             creator: req.client._id
         })
-    
+
         if (!newshare) {
             throw new Erres(500, "server error when creating share")
         }
 
         res.status(200)
-        .json(new Response(200, { document:newdoc, sharedocument:newshare }, "new doc created with share doc"))
+            .json(new Response(200, { document: newdoc, sharedocument: newshare }, "new doc created with share doc"))
     }
 
     res.status(200)
-        .json(new Response(200, { newdoc }, "new doc created"))
+        .json(new Response(200, { ...newdoc._doc }, "new doc created"))
 })
 
 const getonedoc = Apipromise(async (req, res) => {
@@ -59,7 +59,7 @@ const getonedoc = Apipromise(async (req, res) => {
     }
 
     res.status(200)
-        .json(new Response(200, { clientdoc }, "your document"))
+        .json(new Response(200, { ...clientdoc._doc }, "your document"))
 })
 
 const updatedoc = Apipromise(async (req, res) => {
@@ -80,7 +80,7 @@ const updatedoc = Apipromise(async (req, res) => {
             title,
             content,
             shared,
-        },{new: true}
+        }, { new: true }
     )
 
     if (!updateddoc) {
@@ -88,12 +88,12 @@ const updatedoc = Apipromise(async (req, res) => {
     }
 
     res.status(200)
-    .json(new Response(200, {updateddoc}, "doc updated"))
+        .json(new Response(200, { ...updateddoc._doc }, "doc updated"))
 
 })
 
 
-const deletedoc = Apipromise(async (req, res)=>{
+const deletedoc = Apipromise(async (req, res) => {
     const { docid } = req.params
     if (!isValidObjectId(docid)) {
         throw new Erres(400, "document ID is invaild")
@@ -105,7 +105,7 @@ const deletedoc = Apipromise(async (req, res)=>{
                 { creator: req.client._id },
                 { _id: docid }
             ]
-        },{new:true}
+        }, { new: true }
     )
 
     if (!deleted) {
@@ -113,20 +113,35 @@ const deletedoc = Apipromise(async (req, res)=>{
     }
 
     if (deleted.shared) {
-        await Shared.findOneAndDelete({shareddoc: docid})
+        await Shared.findOneAndDelete({ shareddoc: docid })
         res.status(200)
-        .json(new Response(200, {}, "document and share both are deleted"))
+            .json(new Response(200, {}, "document and share both are deleted"))
     }
 
     res.status(200)
-    .json(new Response(200, {}, "document deleted"))
+        .json(new Response(200, {}, "document deleted"))
 })
 
 
-const listclientdocs = Apipromise(async(req, res)=>{
-    const alldocs = await Docs.find({creator: req.client._id})
+const listclientdocs = Apipromise(async (req, res) => {
+    const { page=0, limit=12, q } = req.query
+    // ADD SHORT BY 
+    const documentcount = await Docs.countDocuments({ creator: req.client._id })
+    let hasmore = (documentcount - page * limit) > limit
+    let searchQuery = { creator: req.client._id, };
+    if (q) {
+        searchQuery.title = { $regex: q, $options: "i" };
+    }
+
+    const alldocs = await Docs.aggregate([
+        { $sort:{"createdAt": -1}},
+        { $match: searchQuery },
+        { $skip: page * limit },
+        { $limit: Number(limit) },
+    ])
+
     res.status(200)
-    .json(new Response(200, {...alldocs, total: alldocs.length}, "clients documents"))
+        .json(new Response(200, { doc: [...alldocs], count: documentcount, page: Number(page), limit: Number(limit), hasmore: hasmore }, "clients documents"))
 })
 
 

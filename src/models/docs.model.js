@@ -4,10 +4,12 @@ import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 const docsschema = new Schema({
     title:{
         type: String,
-        required: true
+        required: true,
+        maxLength: [100, 'title cannot exceed 100 characters']
     },
     content:{
         type: String,
+        maxLength: [100000, 'content cannot exceed 100000 characters']
     },
     creator:{
         type: Schema.Types.ObjectId,
