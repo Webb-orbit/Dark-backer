@@ -19,6 +19,11 @@ const docsschema = new Schema({
         type : Boolean,
         default: false
     },
+    shareid:{
+        type: Schema.Types.ObjectId,
+        ref: "Shared",
+        default: null
+    }
 }, {timestamps: true})
 
 docsschema.plugin(mongooseAggregatePaginate)

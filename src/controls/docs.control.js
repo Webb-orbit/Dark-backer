@@ -32,9 +32,15 @@ const createdoc = Apipromise(async (req, res) => {
         if (!newshare) {
             throw new Erres(500, "server error when creating share")
         }
+        const updareddocs = await Docs.findByIdAndUpdate(newdoc._id, {
+            shareid: newshare._id
+        }, {new: true})
 
+        if (!updareddocs) {
+            throw new Erres(500, "server error when upadating docs")
+        }
         res.status(200)
-            .json(new Response(200, { document: newdoc, sharedocument: newshare }, "new doc created with share doc"))
+            .json(new Response(200, { document: updareddocs, sharedocument: newshare }, "new doc created with share doc"))
     }
 
     res.status(200)

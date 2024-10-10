@@ -118,6 +118,19 @@ const addapikey = Apipromise(async (req, res) => {
         .json(new Response(200, addapikey, "apikey updated"))
 })
 
+const deleteapikey = Apipromise(async(req, res)=>{
+    const remove = await Client.findByIdAndUpdate(req.client._id, {
+        $unset:{apikey: 1}
+    }, {new: true}).select("apikey")
+    if (!remove) {
+        throw new Erres(400, "deleteing not successfull")
+    }
+
+    res.status(200)
+    .json(new Response(200, {}, "deleteing successfull"))
+
+})
+
 
 const changepassword = Apipromise(async (req, res) => {
     const { oldpassword, newpassword } = req.body
@@ -176,7 +189,7 @@ const updatedetails = Apipromise(async (req, res) => {
     }
 
     res.status(200)
-    .json(new Response(200, {updateduser}, "user is updated" ))
+    .json(new Response(200, {...updateduser._doc}, "user is updated" ))
 })
 
 const updateavatar = Apipromise(async(req, res)=>{
@@ -194,7 +207,7 @@ const updateavatar = Apipromise(async(req, res)=>{
         $set:{
             logo: uploadnew.url
         }
-    }, {new:true})
+    }, {new:true}).select("logo")
 
     if (!update) {
         await deletefile(uploadnew.url)
@@ -204,8 +217,8 @@ const updateavatar = Apipromise(async(req, res)=>{
     await deletefile(req.client.logo)
 
     res.status(200)
-    .json(new Response(200, {update}, "logo updated"))
+    .json(new Response(200, {...update._doc}, "logo updated"))
 
 })
 
-export { createclent, loginuser, logoutuser, addapikey, changepassword, getuser, updatedetails, updateavatar, getapikey }
+export { createclent, loginuser, logoutuser, addapikey, deleteapikey, changepassword, getuser, updatedetails, updateavatar, getapikey }

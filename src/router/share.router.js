@@ -6,9 +6,9 @@ const router = Router()
 router.use(varifyjwt)
 
 router.route("/create/:docid").post(createshare)
-router.route("/getone/:docid").get(getoneshare)
-router.route("/c/:docid").get(updateshare)
+router.route("/getone/:shareid").get(getoneshare)
+router.route("/c/:shareid").patch(updateshare)
 router.route("/allshares").get(clientsallshare)
-router.route("/d/:docid").delete(removeshare)
+router.route("/d/:shareid").delete(removeshare)
 
 export default router
